@@ -1,20 +1,23 @@
 """Adds voiceover and background music to the silent renders.
 
-    python audio.py MODEL_DIR
+    python audio.py [MODEL_DIR]
+
+By default this adds music only. Set VOICEOVER = True below to add the spoken script too;
+MODEL_DIR is only needed then.
 
 Reads  out/silent/*.mp4  (from render.js), writes  out/*.mp4.
 Voice: Kokoro TTS (Apache 2.0), British English. MODEL_DIR must hold kokoro-v1.0.onnx and
 voices-v1.0.bin from https://github.com/thewh1teagle/kokoro-onnx/releases
-Needs: pip install kokoro-onnx numpy scipy soundfile, plus ffmpeg.
+Needs: pip install numpy scipy soundfile (and kokoro-onnx for the voiceover), plus ffmpeg.
 Music: an original bed synthesised below, so there is nothing to license.
 """
 import subprocess, sys, pathlib
 import numpy as np
 import soundfile as sf
 from scipy.signal import resample_poly, fftconvolve
-from kokoro_onnx import Kokoro
 
 SR, LEN = 44100, 32.0
+VOICEOVER = False            # True adds the spoken script over the music
 VOICE, SPEED = "bf_emma", 1.0
 HERE = pathlib.Path(__file__).parent
 
@@ -124,14 +127,19 @@ def duck(voice):
     return .27 - .17 * smooth
 
 
-def main(model_dir):
-    kokoro = Kokoro(f"{model_dir}/kokoro-v1.0.onnx", f"{model_dir}/voices-v1.0.bin")
+def main(model_dir=None):
+    if VOICEOVER:
+        from kokoro_onnx import Kokoro
+    kokoro = Kokoro(f"{model_dir}/kokoro-v1.0.onnx", f"{model_dir}/voices-v1.0.bin") if VOICEOVER else None
     bed = music()
     for name, hook in HOOKS.items():
         print(name)
-        voice = voice_track(kokoro, hook)
-        mix = bed * duck(voice)[:, None] + voice[:, None]
-        mix = mix / np.abs(mix).max() * 10 ** (-1 / 20)
+        if VOICEOVER:
+            voice = voice_track(kokoro, hook)
+            mix = bed * duck(voice)[:, None] + voice[:, None]
+            mix = mix / np.abs(mix).max() * 10 ** (-1 / 20)
+        else:
+            mix = bed * 10 ** (-5 / 20)
         wav = HERE / "out" / f"{name}.wav"
         sf.write(wav, mix, SR, subtype="PCM_16")
         stem = f"vetted-north-explainer-{name}.mp4"
@@ -142,4 +150,4 @@ def main(model_dir):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(*sys.argv[1:2])
