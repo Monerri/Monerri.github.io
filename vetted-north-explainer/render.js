@@ -32,6 +32,7 @@ async function segment(browser, v, from, to, file) {
 
 (async () => {
   fs.mkdirSync(tmp, { recursive: true });
+  fs.mkdirSync(path.join(out, "silent"), { recursive: true });
   const browser = await chromium.launch();
   const body = path.join(tmp, "body.mp4");
   await segment(browser, 0, HOOK_END, END, body);
@@ -40,7 +41,7 @@ async function segment(browser, v, from, to, file) {
     await segment(browser, v, 0, HOOK_END, hook);
     const list = path.join(tmp, `list${v}.txt`);
     fs.writeFileSync(list, `file '${hook}'\nfile '${body}'\n`);
-    const file = path.join(out, `vetted-north-explainer-${NAMES[v]}.mp4`);
+    const file = path.join(out, "silent", `vetted-north-explainer-${NAMES[v]}.mp4`);
     execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", list,
       "-c", "copy", "-movflags", "+faststart", file]);
     console.log("wrote", file);
