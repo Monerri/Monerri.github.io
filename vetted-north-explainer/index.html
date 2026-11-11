@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Vetted North explainer</title>
+<!--
+  Vetted North explainer video, built as a CSS-animation timeline on a fixed 1920x1080 stage.
+  Open in a browser to preview live. render.js seeks every animation frame by frame to make the MP4s.
+  ?v=0..3 picks the opening line (0 = master, 1-3 = variations).
+-->
+<style>
+@font-face{font-family:Fraunces;src:url(assets/fraunces.woff2) format("woff2");font-weight:100 900;font-style:normal}
+@font-face{font-family:Fraunces;src:url(assets/fraunces-italic.woff2) format("woff2");font-weight:100 900;font-style:italic}
+@font-face{font-family:"DM Sans";src:url(assets/dm-sans.woff2) format("woff2");font-weight:100 1000}
+@font-face{font-family:"Plex Mono";src:url(assets/plex-mono-500.woff2) format("woff2");font-weight:500}
+
+:root{
+  --ink:#1d2733;--blue:#1b5ca8;--blue-deep:#154a88;--blue-tint:#e7eff8;
+  --green:#157a52;--green-tint:#e8f3ee;--ground:#faf6f0;--surface:#fff;
+  --linen:#f1e9dd;--muted:#5b6470;--line:#e8dfd2;--line-strong:#d9cdbb;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--ground)}
+body{font-family:"DM Sans",system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+.serif{font-family:Fraunces,Georgia,serif;font-weight:600;letter-spacing:-.015em;line-height:1.08}
+.mono{font-family:"Plex Mono",monospace;font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:26px;color:var(--muted)}
+em{font-style:italic;color:var(--green)}
+
+/* ---------- timeline primitives ---------- */
+.scene{position:absolute;inset:0;opacity:0;background:var(--ground);
+  animation-name:scene-in,scene-out;animation-duration:.5s,.4s;
+  animation-timing-function:ease-out,ease-in;animation-fill-mode:both,forwards;
+  animation-delay:var(--s),calc(var(--s) + var(--len) - .4s)}
+.scene.last{animation-name:scene-in;animation-duration:.5s;animation-fill-mode:both;animation-delay:var(--s)}
+@keyframes scene-in{from{opacity:0}to{opacity:1}}
+@keyframes scene-out{from{opacity:1}to{opacity:0}}
+
+.a{animation:up .8s var(--ease) both;animation-delay:calc(var(--s) + var(--d,0s))}
+.a.fade{animation-name:fade}
+.a.pop{animation-name:pop;animation-duration:.6s;animation-timing-function:cubic-bezier(.3,1.5,.5,1)}
+.a.wipe{animation-name:wipe;animation-duration:.7s;animation-timing-function:ease-out}
+@keyframes up{from{opacity:0;transform:translateY(44px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+
+/* ---------- shared bits ---------- */
+.lockup{position:absolute;left:110px;top:70px;display:flex;align-items:center;gap:18px;font-size:40px}
+.lockup svg{height:64px;width:46px}
+.photo{position:absolute;right:110px;top:110px;width:688px;height:860px;border-radius:32px;overflow:hidden;
+  box-shadow:0 40px 80px rgba(29,39,51,.18)}
+.photo img{width:100%;height:100%;object-fit:cover;display:block;
+  animation:drift 6s linear both;animation-delay:var(--s)}
+@keyframes drift{from{transform:scale(1.12)}to{transform:scale(1)}}
+.tick{display:inline-grid;place-items:center;border-radius:50%;background:var(--green);flex:none}
+.tick{position:relative}
+.tick svg{position:absolute;inset:22%;width:56%;height:56%}
+
+/* ---------- 1 hook ---------- */
+#hook h1{position:absolute;left:110px;top:270px;width:960px;font-size:94px}
+#hook h1 .w{display:inline-block;white-space:pre}
+#hook .mono{position:absolute;left:110px;bottom:110px}
+
+/* ---------- 2 brand ---------- */
+#brand{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+#brand .mark{position:relative;height:300px;width:218px}
+#brand .mark svg{position:absolute;inset:0;height:100%;width:100%}
+#brand h2{font-size:132px;margin-top:36px}
+#brand p{font-size:50px;color:var(--muted);margin-top:26px;max-width:1300px;line-height:1.3}
+#brand p b{color:var(--ink);font-weight:600}
+
+/* ---------- 3 steps ---------- */
+.head{position:absolute;left:110px;top:190px}
+.head h2{font-size:84px;margin-top:14px}
+#steps .cards{position:absolute;left:110px;right:110px;top:410px;display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:28px;padding:44px;
+  box-shadow:0 24px 50px rgba(29,39,51,.07);height:570px;position:relative}
+.num{width:76px;height:76px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;
+  font-family:Fraunces,serif;font-weight:600;font-size:42px}
+.card h3{font-size:50px;margin-top:26px}
+.card p{font-size:32px;line-height:1.35;color:var(--muted);margin-top:14px}
+.mini{position:absolute;left:44px;right:44px;bottom:44px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.chip{font-size:27px;font-weight:500;padding:12px 22px;border-radius:999px;border:2px solid var(--line-strong);background:var(--ground)}
+.chip.sel{animation:sel .4s ease-out both;animation-delay:calc(var(--s) + var(--d))}
+@keyframes sel{to{background:var(--blue);border-color:var(--blue);color:#fff}}
+.row{display:flex;align-items:center;gap:16px;font-size:30px;font-weight:600;background:var(--green-tint);
+  color:var(--green);padding:14px 24px 14px 14px;border-radius:999px}
+.row .tick{width:44px;height:44px}
+.pc{font-family:"Plex Mono",monospace;font-size:30px;padding:14px 22px;border-radius:14px;background:var(--blue-tint);color:var(--blue-deep)}
+.note{font-size:29px;font-weight:600;color:var(--blue-deep);background:var(--blue-tint);padding:16px 24px;border-radius:18px;line-height:1.3}
+
+/* ---------- 4 checks ---------- */
+#checks .head{top:300px;width:820px}
+#checks .head p{font-size:40px;line-height:1.35;color:var(--muted);margin-top:30px}
+#checks .panel{position:absolute;right:110px;top:150px;width:800px;background:var(--surface);border:2px solid var(--line);
+  border-radius:32px;padding:44px 48px;box-shadow:0 40px 80px rgba(29,39,51,.12)}
+#checks .badge{display:inline-flex;align-items:center;gap:14px;font-size:30px;font-weight:600;color:var(--green);
+  background:var(--green-tint);padding:10px 24px 10px 10px;border-radius:999px}
+#checks .badge .tick{width:40px;height:40px}
+#checks ul{list-style:none;margin-top:22px}
+#checks li{display:flex;align-items:center;gap:26px;padding:30px 0;border-top:2px solid var(--line)}
+#checks li .tick{width:68px;height:68px}
+#checks li div{flex:1}
+#checks li strong{display:block;font-size:42px;font-weight:600}
+#checks li span{display:block;font-size:28px;color:var(--muted);margin-top:4px}
+#checks li i{font-style:normal;font-size:24px;color:var(--green)}
+
+/* ---------- 5 terms ---------- */
+#terms{background:var(--blue-deep);color:#fff}
+#terms .mono{color:#b9d2f0}
+#terms .head h2{color:#fff}
+#terms .cols{position:absolute;left:110px;right:110px;top:470px;display:grid;grid-template-columns:repeat(3,1fr);gap:40px}
+#terms .col{border-top:3px solid rgba(255,255,255,.35);padding-top:36px}
+#terms .col b{display:block;font-family:Fraunces,serif;font-weight:600;font-size:150px;line-height:1;letter-spacing:-.02em}
+#terms .col span{display:block;font-size:42px;line-height:1.3;margin-top:22px;color:#dbe8f7}
+
+/* ---------- 6 cta ---------- */
+#cta .lockup{top:150px;font-size:56px;gap:24px}
+#cta .lockup svg{height:96px;width:70px}
+#cta h2{position:absolute;left:110px;top:330px;width:960px;font-size:104px}
+#cta .sub{position:absolute;left:110px;top:590px;font-size:46px;line-height:1.3;color:var(--muted)}
+#cta .go{position:absolute;left:110px;top:750px;display:flex;align-items:center;gap:44px}
+#cta .btn{background:var(--blue);color:#fff;font-size:44px;font-weight:600;
+  padding:30px 54px;border-radius:999px;box-shadow:0 24px 50px rgba(27,92,168,.35)}
+#cta .url{font-size:44px;font-weight:600;color:var(--blue-deep)}
+#cta .mono{position:absolute;left:110px;bottom:110px}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="logo" viewBox="340 103 1252 1725">
+    <path fill="#1b5ca8" fill-rule="evenodd" d="M966 119 1576 471V1461L966 1812 356 1461V471ZM966 246 467 535V692L966 404 1465 692V535ZM966 531 467 820V1396L966 1684 1465 1396V820Z"/>
+    <path fill="#5b6470" d="M1249 778 966 615 540 861V1353L966 1598 1392 1353V861L1321 820 1265 892 1299 912V1297L966 1489 633 1297V912L966 720 1186 846Z"/>
+    <path fill="#157a52" d="M754 1096 820 1046C870 1089 910 1130 945 1172 1060 1015 1170 878 1299 758L1331 779C1180 965 1060 1150 966 1357 905 1265 830 1176 754 1096Z"/>
+  </symbol>
+  <symbol id="logo-base" viewBox="340 103 1252 1725">
+    <path fill="#1b5ca8" fill-rule="evenodd" d="M966 119 1576 471V1461L966 1812 356 1461V471ZM966 246 467 535V692L966 404 1465 692V535ZM966 531 467 820V1396L966 1684 1465 1396V820Z"/>
+    <path fill="#5b6470" d="M1249 778 966 615 540 861V1353L966 1598 1392 1353V861L1321 820 1265 892 1299 912V1297L966 1489 633 1297V912L966 720 1186 846Z"/>
+  </symbol>
+  <symbol id="logo-tick" viewBox="340 103 1252 1725">
+    <path fill="#157a52" d="M754 1096 820 1046C870 1089 910 1130 945 1172 1060 1015 1170 878 1299 758L1331 779C1180 965 1060 1150 966 1357 905 1265 830 1176 754 1096Z"/>
+  </symbol>
+  <symbol id="check" viewBox="0 0 24 24">
+    <path d="M4.5 12.5l5 5 10-11" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</svg>
+
+<!-- 1 · HOOK  0.0 – 4.0s -->
+<section class="scene" id="hook" style="--s:0s;--len:4s">
+  <div class="lockup serif a fade" style="--d:.1s"><svg><use href="#logo"/></svg>Vetted North</div>
+  <h1 class="serif" id="hookline"></h1>
+  <div class="mono a fade" style="--d:1.6s">Home improvements · North East England</div>
+  <div class="photo a fade" style="--d:.1s"><img src="assets/home-hero.jpg" alt=""></div>
+</section>
+
+<!-- 2 · BRAND  4.0 – 7.5s -->
+<section class="scene" id="brand" style="--s:4s;--len:3.5s">
+  <div class="mark a pop" style="--d:.2s">
+    <svg><use href="#logo-base"/></svg>
+    <svg class="a wipe" style="--d:.7s"><use href="#logo-tick"/></svg>
+  </div>
+  <h2 class="serif a" style="--d:.5s">Vetted North</h2>
+  <p class="a" style="--d:1s">We match you with a <b>trusted local specialist</b><br>who's right for your home.</p>
+</section>
+
+<!-- 3 · STEPS  7.5 – 16.5s -->
+<section class="scene" id="steps" style="--s:7.5s;--len:9s">
+  <div class="lockup serif"><svg><use href="#logo"/></svg>Vetted North</div>
+  <div class="head">
+    <div class="mono a fade" style="--d:.3s">How it works</div>
+    <h2 class="serif a" style="--d:.4s">Three <em>simple</em> steps</h2>
+  </div>
+  <div class="cards">
+    <div class="card a" style="--d:1s">
+      <div class="num">1</div>
+      <h3 class="serif">Tell us what you need</h3>
+      <p>A few quick questions. About two minutes.</p>
+      <div class="mini">
+        <span class="chip sel" style="--d:2.1s">Windows &amp; Doors</span><span class="chip">Kitchens</span>
+        <span class="chip">Solar</span><span class="chip">Extensions</span>
+      </div>
+    </div>
+    <div class="card a" style="--d:3.4s">
+      <div class="num">2</div>
+      <h3 class="serif">We find a suitable specialist</h3>
+      <p>Matched to your project and postcode.</p>
+      <div class="mini">
+        <span class="pc a fade" style="--d:4.1s">NE</span>
+        <span class="row a pop" style="--d:4.6s"><span class="tick"><svg><use href="#check"/></svg></span>Vetted specialist</span>
+      </div>
+    </div>
+    <div class="card a" style="--d:5.8s">
+      <div class="num">3</div>
+      <h3 class="serif">They contact you</h3>
+      <p>To talk through your project.</p>
+      <div class="mini">
+        <span class="note a fade" style="--d:6.6s">We tell you who they are before they get in touch.</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · CHECKS  16.5 – 23.5s -->
+<section class="scene" id="checks" style="--s:16.5s;--len:7s">
+  <div class="lockup serif"><svg><use href="#logo"/></svg>Vetted North</div>
+  <div class="head">
+    <div class="mono a fade" style="--d:.3s">How we check specialists</div>
+    <h2 class="serif a" style="--d:.4s"><em>Four checks</em> before we recommend anyone</h2>
+    <p class="a" style="--d:5s">Reviewed regularly, and we show you when they were last confirmed.</p>
+  </div>
+  <div class="panel a" style="--d:.7s">
+    <span class="badge"><span class="tick"><svg><use href="#check"/></svg></span>Vetted specialist</span>
+    <ul>
+      <li><span class="tick a pop" style="--d:1.4s"><svg><use href="#check"/></svg></span>
+        <div class="a fade" style="--d:1.3s"><strong>Registered company</strong><span>Properly registered business</span></div>
+        <i class="mono a fade" style="--d:1.6s">Passed</i></li>
+      <li><span class="tick a pop" style="--d:2.3s"><svg><use href="#check"/></svg></span>
+        <div class="a fade" style="--d:2.2s"><strong>Insurance-backed guarantee</strong><span>Protection for qualifying work</span></div>
+        <i class="mono a fade" style="--d:2.5s">Passed</i></li>
+      <li><span class="tick a pop" style="--d:3.2s"><svg><use href="#check"/></svg></span>
+        <div class="a fade" style="--d:3.1s"><strong>Trade scheme registration</strong><span>The right scheme for the work</span></div>
+        <i class="mono a fade" style="--d:3.4s">Passed</i></li>
+      <li><span class="tick a pop" style="--d:4.1s"><svg><use href="#check"/></svg></span>
+        <div class="a fade" style="--d:4s"><strong>Google rating</strong><span>Above four stars</span></div>
+        <i class="mono a fade" style="--d:4.3s">Passed</i></li>
+    </ul>
+  </div>
+</section>
+
+<!-- 5 · TERMS  23.5 – 27.5s -->
+<section class="scene" id="terms" style="--s:23.5s;--len:4s">
+  <div class="head">
+    <div class="mono a fade" style="--d:.3s">On your terms</div>
+    <h2 class="serif a" style="--d:.4s">You stay in control.</h2>
+  </div>
+  <div class="cols">
+    <div class="col a" style="--d:.8s"><b>Free</b><span>for homeowners</span></div>
+    <div class="col a" style="--d:1.3s"><b>1, 2 or 3</b><span>specialists contact you.<br>You choose.</span></div>
+    <div class="col a" style="--d:1.8s"><b>No</b><span>obligation to go ahead</span></div>
+  </div>
+</section>
+
+<!-- 6 · CTA  27.5 – 32.0s -->
+<section class="scene last" id="cta" style="--s:27.5s">
+  <div class="lockup serif a fade" style="--d:.2s"><svg><use href="#logo"/></svg>Vetted North</div>
+  <h2 class="serif a" style="--d:.4s">Make your home better. <em>With the right people.</em></h2>
+  <div class="sub a" style="--d:.9s">Tell us about your project.<br>It takes about two minutes.</div>
+  <div class="go">
+    <div class="btn a pop" style="--d:1.4s">Find a specialist →</div>
+    <div class="url a fade" style="--d:1.8s">vettednorth.com</div>
+  </div>
+  <div class="mono a fade" style="--d:2.1s">Free for homeowners · North East England</div>
+  <div class="photo a fade" style="--d:.2s"><img src="assets/home-hero.jpg" alt=""></div>
+</section>
+
+<script>
+// Opening lines: 0 is the master, 1-3 are the variations. [text, emphasised?]
+const HOOKS = [
+  [["Make your home better.", 0], ["With the right people.", 1]],
+  [["Finding a tradesperson you can trust", 0], ["shouldn't be a gamble.", 1]],
+  [["New windows. A new kitchen. An extension.", 0], ["But who do you call?", 1]],
+  [["Before we recommend anyone,", 0], ["they pass four checks.", 1]],
+];
+const v = Math.min(HOOKS.length - 1, Math.max(0, +new URLSearchParams(location.search).get("v") || 0));
+const h1 = document.getElementById("hookline");
+let i = 0;
+for (const [text, strong] of HOOKS[v]) {
+  const holder = strong ? h1.appendChild(document.createElement("em")) : h1;
+  for (const word of text.split(" ")) {
+    const s = document.createElement("span");
+    s.className = "w a";
+    s.style.setProperty("--d", (0.3 + i++ * 0.1).toFixed(2) + "s");
+    s.textContent = word + " ";
+    holder.appendChild(s);
+  }
+  if (!strong) h1.appendChild(document.createElement("br"));
+}
+// Used by render.js: freeze every animation at time t (seconds).
+window.seek = t => document.getAnimations().forEach(a => { a.pause(); a.currentTime = t * 1000; });
+</script>
+</body>
+</html>
